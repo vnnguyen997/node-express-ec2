@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
-class Register extends Component {
+class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
       username: '',
-      email: '',
       password: ''
     };
   }
@@ -18,8 +17,8 @@ class Register extends Component {
 
   handleSubmit = (event) => {
     event.preventDefault();
-    const { username, email, password } = this.state;
-    axios.post('http://3.133.128.233:5001/register', { username, email, password })
+    const { username, password } = this.state;
+    axios.post('http://3.133.128.233:5001/login', { username, password })
       .then((response) => {
         console.log(response.data);
       })
@@ -29,10 +28,10 @@ class Register extends Component {
   };
 
   render() {
-    const { username, email, password } = this.state;
+    const { username, password } = this.state;
     return (
       <div>
-        <h2>Register</h2>
+        <h2>Login</h2>
         <form onSubmit={this.handleSubmit}>
           <label>
             Username:
@@ -40,20 +39,15 @@ class Register extends Component {
           </label>
           <br />
           <label>
-            Email:
-            <input type="email" name="email" value={email} onChange={this.handleInputChange} />
-          </label>
-          <br />
-          <label>
             Password:
             <input type="password" name="password" value={password} onChange={this.handleInputChange} />
           </label>
           <br />
-          <button type="submit">Register</button>
+          <button type="submit">Login</button>
         </form>
       </div>
     );
   }
 }
 
-export default Register;
+export default Login;
