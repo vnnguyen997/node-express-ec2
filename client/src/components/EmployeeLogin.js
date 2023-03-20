@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
-class Login extends Component {
+class EmployeeLogin extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -18,7 +18,7 @@ class Login extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     const { email, password } = this.state;
-    axios.post('http://3.133.128.233:5001/login', { email, password })
+    axios.post('http://3.133.128.233:5001/employeeLogin', { email, password })
       .then((response) => {
         console.log(response.data);
       })
@@ -31,11 +31,11 @@ class Login extends Component {
     const { email, password } = this.state;
     return (
       <div>
-        <h2>Login</h2>
+        <h2>Employee Login</h2>
         <form onSubmit={this.handleSubmit}>
           <label>
             Email:
-            <input type="text" name="email" value={email} onChange={this.handleInputChange} />
+            <input type="email" name="email" value={email} onChange={this.handleInputChange} />
           </label>
           <br />
           <label>
@@ -50,4 +50,4 @@ class Login extends Component {
   }
 }
 
-export default Login;
+export default EmployeeLogin;

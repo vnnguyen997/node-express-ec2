@@ -1,18 +1,17 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
-class Register extends Component {
+class EmployeeCreate extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      firstname: '',
-      lastname: '',
+      employee_id: '',
+      firstName: '',
+      lastName: '',
       email: '',
-      password: '',
-      shippingaddress: '',
-      creditcard: ''
+      password: ''
     };
-  }
+  };
 
   handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -21,8 +20,8 @@ class Register extends Component {
 
   handleSubmit = (event) => {
     event.preventDefault();
-    const { firstname, lastname, email, password, shippingaddress, creditcard } = this.state;
-    axios.post('http://3.133.128.233:5001/register', { firstname, lastname, email, password, shippingaddress, creditcard })
+    const { employee_id, firstname, lastname, email, password } = this.state;
+    axios.post('http://3.133.128.233:5001/employeeCreate', { employee_id, firstname, lastname, email, password })
       .then((response) => {
         console.log(response.data);
       })
@@ -32,11 +31,16 @@ class Register extends Component {
   };
 
   render() {
-    const { firstname, lastname, email, password, shippingaddress, creditcard } = this.state;
+    const { employee_id, firstname, lastname, email, password } = this.state;
     return (
       <div>
-        <h2>Register</h2>
+        <h2>Create Employee</h2>
         <form onSubmit={this.handleSubmit}>
+          <label>
+            Employee ID:
+            <input type="text" name="employee_id" value={employee_id} onChange={this.handleInputChange} />
+          </label>
+          <br />
           <label>
             First Name:
             <input type="text" name="firstname" value={firstname} onChange={this.handleInputChange} />
@@ -57,21 +61,12 @@ class Register extends Component {
             <input type="password" name="password" value={password} onChange={this.handleInputChange} />
           </label>
           <br />
-          <label>
-            Shipping Address:
-            <input type="text" name="shippingaddress" value={shippingaddress} onChange={this.handleInputChange} />
-          </label>
-          <br />
-          <label>
-            Credit Card:
-            <input type="number" name="creditcard" value={creditcard} onChange={this.handleInputChange} />
-          </label>
-          <br />
-          <button type="submit">Register</button>
+          <button type="submit">Create Employee</button>
         </form>
       </div>
     );
-  }
-}
+  };
 
-export default Register;
+};
+
+export default EmployeeCreate;
