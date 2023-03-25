@@ -25,6 +25,9 @@ const userSchema = {
   password: { type: 'string', required: true },
 };
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~CUSTOMER STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Define user model
 const UserModel = {
   // register users
@@ -65,8 +68,153 @@ const UserModel = {
       const { rows } = await client.query(query);
       return rows[0];
   },
+
+  // get user first name
+  async getCustFirstName(email) {
+    try {
+      const query = {
+        text: 'SELECT firstname FROM customer WHERE email = $1',
+        values: [email],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].firstname;
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get user first name');
+    }
+  },
+
+  // get user last name
+  async getCustLastName(email) {
+    try {
+      const query = {
+        text: 'SELECT lastname FROM customer WHERE email = $1',
+        values: [email],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].lastname;
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get user last name');
+    }
+  },
+
+  // get user shippingaddress
+  async getCustShippingAddress(email) {
+    try {
+      const query = {
+        text: 'SELECT shippingaddress FROM customer WHERE email = $1',
+        values: [email],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].shippingaddress;
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get user shippingaddress');
+    }
+  },
+
+  // get user creditcard
+  async getCustCreditCard(email) {
+    try {
+      const query = {
+        text: 'SELECT creditcard FROM customer WHERE email = $1',
+        values: [email],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].creditcard;
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get user creditcard');
+    }
+  },
+
+  // update customer first name
+  async updateCustFirstName(email, firstName) {
+    try {
+      const updateQuery = {
+        text: 'UPDATE customers SET firstname = $1 WHERE email = $2 RETURNING *',
+        values: [firstName, email],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update customer first name');
+    }
+  },
+
+  // update customer last name
+  async updateCustLastName(email, lastName) {
+    try {
+      const updateQuery = {
+        text: 'UPDATE customers SET lastname = $1 WHERE email = $2 RETURNING *',
+        values: [lastName, email],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update customer last name');
+    }
+  },
+
+  // update customer shipping address
+  async updateCustShippingAddress(email, shippingaddress) {
+    try {
+      const updateQuery = {
+        text: 'UPDATE customers SET shippingaddress = $1 WHERE email = $2 RETURNING *',
+        values: [shippingaddress, email],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update customer shipping address');
+    }
+  },
+
+  // update customer credit card
+  async updateCustCreditCard(email, creditcard) {
+    try {
+      const updateQuery = {
+        text: 'UPDATE customers SET creditcard = $1 WHERE email = $2 RETURNING *',
+        values: [creditcard, email],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update customer credit card information');
+    }
+  },
+
+
 };
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~EMPLOYEE STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const EmployeeModel = { 
   // create employee
   async createEmployee(employee) {
@@ -109,16 +257,144 @@ const EmployeeModel = {
       const { rows } = await client.query(query);
       return rows[0];
   },
+
+  // get employee id
+  async getEmployeeID(email) {
+    try {
+      const query = {
+        text: 'SELECT employee_id FROM employee WHERE email = $1',
+        values: [email],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].employee_id;
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get employee id');
+    }
+  },
+
+  // get user first name
+  async getEmployFirstName(email) {
+    try {
+      const query = {
+        text: 'SELECT firstname FROM employee WHERE email = $1',
+        values: [email],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].firstname;
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get employee first name');
+    }
+  },
+
+  // get user last name
+  async getEmployLastName(email) {
+    try {
+      const query = {
+        text: 'SELECT lastname FROM employee WHERE email = $1',
+        values: [email],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].lastname;
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get employee last name');
+    }
+  },
+
+  // get user shippingaddress
+  async getEmployAddress(email) {
+    try {
+      const query = {
+        text: 'SELECT address FROM employee WHERE email = $1',
+        values: [email],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].address;
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get employee address');
+    }
+  },
+
+  // update Employee firstname
+  async updateEmployFirstName(employeeId, firstName) {
+    try {
+      const updateQuery = {
+        text: 'UPDATE employees SET firstname = $1 WHERE employee_id = $2 RETURNING *',
+        values: [firstName, employeeId],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update employee first name');
+    }
+  },
+
+  // update Employee last name
+  async updateEmployLastName(employeeId, lastName) {
+    try {
+      const updateQuery = {
+        text: 'UPDATE employees SET lastname = $1 WHERE employee_id = $2 RETURNING *',
+        values: [lastName, employeeId],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update employee last name');
+    }
+  },
+
+  // update Employee address
+  async updateEmployAddress(employeeId, address) {
+    try {
+      const updateQuery = {
+        text: 'UPDATE employees SET address = $1 WHERE employee_id = $2 RETURNING *',
+        values: [address, employeeId],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update employee address');
+    }
+  }
+
 };
 
-// Define user model
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~INVENTORY STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Define Inventory model
 const InventoryModel = {
   async create(item) {
     try {
       // Insert new item
       const insertQuery = {
-        text: 'INSERT INTO inventory(name, description, weight, price, itemgroup) VALUES($1, $2, $3, $4, $5) RETURNING *',
-        values: [item.name, item.description, item.weight, item.price, item.itemgroup],
+        text: 'INSERT INTO inventory(name, description, weight, price, itemgroup, stock) VALUES($1, $2, $3, $4, $5, $6) RETURNING *',
+        values: [item.name, item.description, item.weight, item.price, item.itemgroup, item.stock],
       };
       const { rows } = await client.query(insertQuery);
       console.log(rows[0]);
@@ -129,6 +405,121 @@ const InventoryModel = {
     }
   },
 
+  // get item name
+  async getInventoryName(itemid) {
+    try {
+      const query = {
+        text: 'SELECT name FROM inventory WHERE itemid = $1',
+        values: [id],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].name;
+      } else {
+        throw new Error('Inventory item not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get inventory name');
+    }
+  },
+
+  // get item description
+  async getInventoryDescription(itemid) {
+    try {
+      const query = {
+        text: 'SELECT description FROM inventory WHERE itemid = $1',
+        values: [itemid],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].description;
+      } else {
+        throw new Error('Inventory item not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get inventory description');
+    }
+  },
+
+  // get item weight
+  async getInventoryWeight(itemid) {
+    try {
+      const query = {
+        text: 'SELECT weight FROM inventory WHERE itemid = $1',
+        values: [itemid],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].weight;
+      } else {
+        throw new Error('Inventory item not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get inventory weight');
+    }
+  },
+
+  // get item price
+  async getInventoryPrice(itemid) {
+    try {
+      const query = {
+        text: 'SELECT price FROM inventory WHERE itemid = $1',
+        values: [itemid],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].price;
+      } else {
+        throw new Error('Inventory item not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get inventory price');
+    }
+  },
+
+  // get itemgroup
+  async getInventoryItemGroup(itemid) {
+    try {
+      const query = {
+        text: 'SELECT itemgroup FROM inventory WHERE itemid = $1',
+        values: [itemid],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].itemgroup;
+      } else {
+        throw new Error('Inventory item not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get inventory item group');
+    }
+  },
+
+  // get item stock
+  async getInventoryStock(itemid) {
+    try {
+      const query = {
+        text: 'SELECT stock FROM inventory WHERE itemid = $1',
+        values: [itemid],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows[0].stock;
+      } else {
+        throw new Error('Inventory item not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get inventory stock');
+    }
+  },
+
+  // update name
   async updateName(itemId, name) {
     try {
       const updateQuery = {
@@ -144,6 +535,7 @@ const InventoryModel = {
     }
   },
 
+  // update name
   async updateDescription(itemId, description) {
     try {
       const updateQuery = {
@@ -159,6 +551,7 @@ const InventoryModel = {
     }
   },
 
+  // update name
   async updateWeight(itemId, weight) {
     try {
       const updateQuery = {
@@ -174,6 +567,7 @@ const InventoryModel = {
     }
   },
 
+  // update price
   async updatePrice(itemId, price) {
     try {
       const updateQuery = {
@@ -189,6 +583,7 @@ const InventoryModel = {
     }
   },
 
+  // update itemgroup
   async updateItemGroup(itemId, itemGroup) {
     try {
       const updateQuery = {
@@ -203,6 +598,135 @@ const InventoryModel = {
       throw new Error('Failed to update item group');
     }
   },
+
+  // update stock
+  async updateStock(itemId, stock) {
+    try {
+      const updateQuery = {
+        text: 'UPDATE inventory SET stock = $1 WHERE inventory_id = $2 RETURNING *',
+        values: [stock, itemId],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update stock');
+    }
+  },
+
+};
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ORDER STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Define Order model
+const OrderModel = {
+  async create(order) {
+    try {
+      // Insert new order
+      const insertQuery = {
+        text: 'INSERT INTO orders(creationdate, status, deliverydate) VALUES($1, $2, $3) RETURNING *',
+        values: [order.creationdate, order.status, order.deliverydate],
+      };
+      const { rows } = await client.query(insertQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to create order');
+    }
+  },
+
+  // get order status
+  async getOrderStatus(order_id) {
+    try {
+      const query = {
+        text: 'SELECT status FROM orders WHERE order_id = $1',
+        values: [order_id],
+    };
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+      return rows[0].status;
+    } else {
+        throw new Error('Order not found');
+    }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get order status');
+    }
+  },
+    
+    // get order creation date
+  async getOrderCreationDate(order_id) {
+    try {
+      const query = {
+        text: 'SELECT creationdate FROM orders WHERE order_id = $1',
+        values: [order_id],
+    };
+    const { rows } = await client.query(query);
+    if (rows.length > 0) {
+    return rows[0].creationdate;
+    } else {
+      throw new Error('Order not found');
+    }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get order creation date');
+    }
+  },
+    
+  // get order delivery date
+  async getOrderDeliveryDate(order_id) {
+    try {
+      const query = {
+        text: 'SELECT deliverydate FROM orders WHERE order_id = $1',
+        values: [order_id],
+    };
+    const { rows } = await client.query(query);
+    if (rows.length > 0) {
+    return rows[0].deliverydate;
+    } else {
+        throw new Error('Order not found');
+    }
+    } catch (err) {
+        console.error(err);
+        throw new Error('Failed to get order delivery date');
+    }
+  },
+
+  //update order status
+  async updateOrderStatus(order_id, status) {
+    try {
+      const updateQuery = {
+        text: 'UPDATE orders SET status = $1 WHERE order_id = $2 RETURNING *',
+        values: [status, order_id],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update order status');
+    }
+  },
+
+  // update order delivery date
+  async updateOrderDeliveryDate(order_id, deliverydate) {
+    try {
+      const updateQuery = {
+        text: 'UPDATE orders SET deliverydate = $1 WHERE order_id = $2 RETURNING *',
+        values: [deliverydate, order_id],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update order delivery date');
+    }
+  },
+
 };
 
 
@@ -211,6 +735,13 @@ const InventoryModel = {
 app.use(cors());
 app.use(bodyParser.json());
 
+/**********************************************************************************************************
+**************************************END POINTS BELOW*****************************************************
+**********************************************************************************************************/
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~CUSTOMER STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Endpoint for user registration
 app.post('/register', async (req, res) => {
   try {
@@ -271,6 +802,111 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// Endpoint to get user's first name
+app.get('/getCustFirstName', async (req, res) => {
+  try {
+    const { email } = req.query;
+    const firstName = await UserModel.getCustFirstName(email);
+    res.status(200).json({ firstName });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/getCustLastName', async (req, res) => {
+  try {
+    const { email } = req.query;
+    const lastName = await UserModel.getCustLastName(email);
+    res.status(200).json({ lastName });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to get customer shipping address by email
+app.get('/getCustShippingAddress', async (req, res) => {
+  try {
+    const { email } = req.query;
+    const shippingAddress = await UserModel.getCustShippingAddress(email);
+    res.status(200).json({ shippingAddress });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to get customer's credit card information
+app.get('/getCustCreditCard', async (req, res) => {
+  try {
+    const { email } = req.query;
+    const creditCard = await UserModel.getCustCreditCard(email);
+    res.status(200).json({ creditCard });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to update a customer's first name
+app.patch('/updateCustFirstName', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const firstName = req.body.firstName;
+    const updatedCustomer = await UserModel.updateCustFirstName(email, firstName);
+    res.json(updatedCustomer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to update a customer's last name
+app.patch('/updateCustLastName', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const lastName = req.body.lastName;
+    const updatedCustomer = await UserModel.updateCustLastName(email, lastName);
+    res.json(updatedCustomer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to update a customer's shipping address
+app.patch('/updateCustShippingAddress', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const shippingAddress = req.body.shippingaddress;
+    const updatedCustomer = await UserModel.updateCustShippingAddress(email, shippingAddress);
+    res.json(updatedCustomer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to update a customer's credit card information
+app.patch('/updateCustCreditCard', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const creditcard = req.body.creditcard;
+    const updatedCustomer = await UserModel.updateCustCreditCard(email, creditcard);
+    res.json(updatedCustomer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~EMPLOYEE STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Endpoint for employee creation
 app.post('/employeeCreate', async (req, res) => {
   try {
@@ -328,7 +964,95 @@ app.post('/employeeLogin', async (req, res) => {
   }
 });
 
-// Endpoint to create a new inventory item
+// Endpoint to get employee ID by email
+app.get('/getEmployeeID', async (req, res) => {
+  try {
+    const { email } = req.query;
+    const employeeId = await getEmployeeID(email);
+    res.status(200).json({ employeeId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/getEmployFirstName', async (req, res) => {
+  try {
+    const { employee_ID } = req.query;
+    const firstName = await getEmployFirstName(employee_ID);
+    res.status(200).json({ firstName });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to get employee last name
+app.get('/getEmployLastName', async (req, res) => {
+  try {
+    const { employee_ID } = req.query;
+    const lastName = await getEmployLastName(employee_ID);
+    res.status(200).json({ lastName });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/getEmployAddress', async (req, res) => {
+  try {
+    const { employee_ID } = req.query;
+    const address = await getEmployAddress(employee_ID);
+    res.status(200).json({ address });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to update an employee's first name
+app.patch('/updateEmployFirstName', async (req, res) => {
+  try {
+    const employeeId = req.params.employeeId;
+    const firstName = req.body.firstName;
+    const updatedEmployee = await EmployeeModel.updateEmployFirstName(employeeId, firstName);
+    res.json(updatedEmployee);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to update an employee's last name
+app.patch('updateEmployLastName', async (req, res) => {
+  try {
+    const employeeId = req.params.employeeId;
+    const lastName = req.body.lastName;
+    const updatedEmployee = await EmployeeModel.updateEmployLastName(employeeId, lastName);
+    res.json(updatedEmployee);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch('updateEmployAddress', async (req, res) => {
+  try {
+    const employeeId = req.params.employeeId;
+    const address = req.body.address;
+    const updatedEmployee = await EmployeeModel.updateEmployAddress(employeeId, address);
+    res.json(updatedEmployee);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~INVENTORY STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Endpoint to get inventory stock
 app.post('/createInventory', async (req, res) => {
   try {
     const item = req.body;
@@ -340,8 +1064,80 @@ app.post('/createInventory', async (req, res) => {
   }
 });
 
+// Endpoint to get the name of an inventory item by itemid
+app.get('/getInventoryName', async (req, res) => {
+  try {
+    const { itemid } = req.params;
+    const name = await getInventoryName(itemid);
+    res.status(200).json({ name });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to get the weight of an inventory description
+app.get('/getInventoryDescription', async (req, res) => {
+  try {
+    const { itemid } = req.query;
+    const description = await getInventoryDescription(itemid);
+    res.status(200).json({ description });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to get the weight of an inventory item
+app.get('/getInventoryWeight', async (req, res) => {
+  try {
+    const { itemid } = req.query;
+    const weight = await getInventoryWeight(itemid);
+    res.status(200).json({ weight });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to get the price of an item in inventory
+app.get('/getInventoryPrice', async (req, res) => {
+  try {
+    const { itemid } = req.query;
+    const price = await getInventoryPrice(itemid);
+    res.status(200).json({ price });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to get inventory itemgroup
+app.get('/getInventoryItemGroup', async (req, res) => {
+  try {
+    const { itemid } = req.query;
+    const itemGroup = await getInventoryItemGroup(itemid);
+    res.status(200).json({ itemGroup });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to get inventory stock
+app.get('/getInventoryStock', async (req, res) => {
+  try {
+    const { itemid } = req.query;
+    const stock = await getInventoryStock(itemid);
+    res.status(200).json({ stock });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Endpoint to update an inventory item's name
-app.patch('/inventory/:itemId/name', async (req, res) => {
+app.patch('updateName', async (req, res) => {
   try {
     const itemId = req.params.itemId;
     const name = req.body.name;
@@ -354,7 +1150,7 @@ app.patch('/inventory/:itemId/name', async (req, res) => {
 });
 
 // Endpoint to update an inventory item's description
-app.patch('/inventory/:itemId/description', async (req, res) => {
+app.patch('updateDescription', async (req, res) => {
   try {
     const itemId = req.params.itemId;
     const description = req.body.description;
@@ -367,7 +1163,7 @@ app.patch('/inventory/:itemId/description', async (req, res) => {
 });
 
 // Endpoint to update an inventory item's weight
-app.patch('/inventory/:itemId/weight', async (req, res) => {
+app.patch('updateWeight', async (req, res) => {
   try {
     const itemId = req.params.itemId;
     const weight = req.body.weight;
@@ -380,7 +1176,7 @@ app.patch('/inventory/:itemId/weight', async (req, res) => {
 });
 
 // Endpoint to update an inventory item's price
-app.patch('/inventory/:itemId/price', async (req, res) => {
+app.patch('updatePrice', async (req, res) => {
   try {
     const itemId = req.params.itemId;
     const price = req.body.price;
@@ -393,7 +1189,7 @@ app.patch('/inventory/:itemId/price', async (req, res) => {
 });
 
 // Endpoint to update an inventory item's item group
-app.patch('/inventory/:itemId/item-group', async (req, res) => {
+app.patch('updateItemGroup', async (req, res) => {
   try {
     const itemId = req.params.itemId;
     const itemGroup = req.body.itemGroup;
@@ -404,6 +1200,72 @@ app.patch('/inventory/:itemId/item-group', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ORDER STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// get order status
+app.get('/getOrderStatus', async (req, res) => {
+  try {
+    const { order_id } = req.query;
+    const status = await getOrderStatus(order_id);
+    res.status(200).json({ status });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/getOrderCreationDate', async (req, res) => {
+  try {
+    const { order_id } = req.query;
+    const creationDate = await OrderModel.getOrderCreationDate(order_id);
+    res.status(200).json({ creationDate });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to get order delivery date
+app.get('/getOrderDeliveryDate', async (req, res) => {
+  try {
+    const { order_id } = req.params;
+    const deliveryDate = await OrderModel.getOrderDeliveryDate(order_id);
+    res.status(200).json({ deliveryDate });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to update an order's status
+app.patch('updateOrderStatus', async (req, res) => {
+  try {
+    const orderId = req.params.order_id;
+    const status = req.body.status;
+    const updatedOrder = await OrderModel.updateOrderStatus(orderId, status);
+    res.json(updatedOrder);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to update an order's delivery date
+app.patch('/updateOrderDeliveryDate', async (req, res) => {
+  try {
+    const orderId = req.params.order_id;
+    const deliveryDate = req.body.deliveryDate;
+    const updatedOrder = await OrderModel.updateOrderDeliveryDate(orderId, deliveryDate);
+    res.json(updatedOrder);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Start server
 app.listen(port, () => {
