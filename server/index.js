@@ -59,7 +59,37 @@ const UserModel = {
     }
   },
 
+  // Update customer page
+  async updateCustomer(email, updateFields) {
+    try {
+      const customer = await client.query('SELECT * FROM customer WHERE email = $1', [email]);
+      if (customer.rowCount === 0) {
+        throw new Error('Customer not found');
+      }
+  
+      const updateQuery = {
+        text: 'UPDATE customer SET firstname = $1, lastname = $2, email = $3, password = $4, shippingaddress = $5, creditcard = $6 WHERE email = $7 RETURNING *',
+        values: [
+          updateFields.firstname || customer.rows[0].firstname,
+          updateFields.lastname || customer.rows[0].lastname,
+          updateFields.email || customer.rows[0].email,
+          updateFields.password ? await bcrypt.hash(updateFields.password, 10) : customer.rows[0].password,
+          updateFields.shippingaddress || customer.rows[0].shippingaddress,
+          updateFields.creditcard || customer.rows[0].creditcard,
+          email
+        ]
+      };
+  
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to update customer');
+    }
+  },
 
+  // Find customer by email
   async findByEmail(email) {
       const query = {
         text: 'SELECT * FROM customer WHERE email = $1',
@@ -67,6 +97,28 @@ const UserModel = {
       };
       const { rows } = await client.query(query);
       return rows[0];
+  },
+
+  // Delete customer by email
+  async removeCustomer(email) {
+    try {
+      // Find the customer with the given email
+      const customer = await UserModel.findByEmail(email);
+      if (!customer) {
+        throw new Error('Customer not found');
+      }
+  
+      // Delete the customer
+      const query = {
+        text: 'DELETE FROM customer WHERE email = $1',
+        values: [email],
+      };
+      const result = await client.query(query);
+      console.log(result);
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to remove customer');
+    }
   },
 
   // get user first name
@@ -249,6 +301,7 @@ const EmployeeModel = {
     }
   },
 
+  // Find employee by email
     async findByEmail(email) {
       const query = {
         text: 'SELECT * FROM employee WHERE email = $1',
@@ -256,6 +309,61 @@ const EmployeeModel = {
       };
       const { rows } = await client.query(query);
       return rows[0];
+  },
+
+  // Update employee page 
+  async updateEmployee(email, updateFields) {
+    try {
+      // Get the employee with the specified email
+      const getEmployeeQuery = {
+        text: 'SELECT * FROM employee WHERE email = $1',
+        values: [email],
+      };
+      const { rowCount, rows: employee } = await client.query(getEmployeeQuery);
+      if (rowCount === 0) {
+        throw new Error('Employee not found');
+      }
+  
+      // Update the employee fields with the new values, or keep the old value if the field is not provided
+      const updateQuery = {
+        text: 'UPDATE employee SET firstname = $1, lastname = $2, email = $3, password = $4 WHERE email = $5 RETURNING *',
+        values: [
+          updateFields.firstname || employee[0].firstname,
+          updateFields.lastname || employee[0].lastname,
+          updateFields.email || employee[0].email,
+          updateFields.password ? await bcrypt.hash(updateFields.password, 10) : employee[0].password,
+          email,
+        ],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update employee');
+    }
+  },
+
+  // Delete employee by email
+  async removeEmployee(email) {
+    try {
+      // Find the employee with the given email
+      const employee = await EmployeeModel.findByEmail(email);
+      if (!employee) {
+        throw new Error('Employee not found');
+      }
+  
+      // Delete the employee
+      const query = {
+        text: 'DELETE FROM employee WHERE email = $1',
+        values: [email],
+      };
+      const result = await client.query(query);
+      console.log(result);
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to remove employee');
+    }
   },
 
   // get employee id
@@ -402,6 +510,67 @@ const InventoryModel = {
     } catch (err) {
       console.error(err);
       throw new Error('Failed to create item');
+    }
+  },
+
+  // Update inventory item based on inventory_id
+  async updateInventory(id, updateFields) {
+    try {
+      // Get the inventory item with the specified id
+      const getInventoryQuery = {
+        text: 'SELECT * FROM inventory WHERE inventory_id = $1',
+        values: [id],
+      };
+      const { rowCount, rows: inventory } = await client.query(getInventoryQuery);
+      if (rowCount === 0) {
+        throw new Error('Inventory item not found');
+      }
+  
+      // Update the inventory fields with the new values, or keep the old value if the field is not provided
+      const updateQuery = {
+        text: 'UPDATE inventory SET name = $1, description = $2, weight = $3, price = $4, itemgroup = $5, stock = $6 WHERE inventory_id = $7 RETURNING *',
+        values: [
+          updateFields.name || inventory[0].name,
+          updateFields.description || inventory[0].description,
+          updateFields.weight || inventory[0].weight,
+          updateFields.price || inventory[0].price,
+          updateFields.itemgroup || inventory[0].itemgroup,
+          updateFields.stock || inventory[0].stock,
+          id,
+        ],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update inventory item');
+    }
+  },
+
+  // Delete item based on inventory_id
+  async removeInventoryItem(inventoryId) {
+    try {
+      // Find the item with the given inventory ID
+      const query = {
+        text: 'SELECT * FROM inventory WHERE inventory_id = $1',
+        values: [inventoryId],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length === 0) {
+        throw new Error('Inventory item not found');
+      }
+  
+      // Delete the item
+      const deleteQuery = {
+        text: 'DELETE FROM inventory WHERE inventory_id = $1',
+        values: [inventoryId],
+      };
+      const result = await client.query(deleteQuery);
+      console.log(result);
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to remove inventory item');
     }
   },
 
@@ -622,7 +791,7 @@ const InventoryModel = {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Define Order model
 const OrderModel = {
-  async create(order) {
+  async createOrder(order) {
     try {
       // Insert new order
       const insertQuery = {
@@ -635,6 +804,32 @@ const OrderModel = {
     } catch (err) {
       console.error(err);
       throw new Error('Failed to create order');
+    }
+  },
+
+  // Delete Orders using Order_id
+  async removeOrder(orderId) {
+    try {
+      // Find the order with the given order ID
+      const query = {
+        text: 'SELECT * FROM orders WHERE order_id = $1',
+        values: [orderId],
+      };
+      const { rows } = await client.query(query);
+      if (rows.length === 0) {
+        throw new Error('Order not found');
+      }
+  
+      // Delete the order
+      const deleteQuery = {
+        text: 'DELETE FROM orders WHERE order_id = $1',
+        values: [orderId],
+      };
+      const result = await client.query(deleteQuery);
+      console.log(result);
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to remove order');
     }
   },
 
@@ -794,11 +989,36 @@ app.post('/login', async (req, res) => {
 
     // Return success response
     console.log('Login successful');
-    res.status(200).json({ message: 'Login successful' });
+    res.status(200).json({ message: 'Login successful', user });
   } catch (err) {
     // Handle errors
     console.error(err);
     res.status(401).json({ error: err.message });
+  }
+});
+
+// Endpoint to update whole customer page
+app.put('/updateCustomer', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const updateFields = req.body;
+    const updatedCustomer = await UserModel.updateCustomer(email, updateFields);
+    res.json(updatedCustomer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to update customer');
+  }
+});
+
+// Endpoint to delete customer
+app.delete('/removeCustomer', async (req, res) => {
+  try {
+    const { email } = req.query;
+    await UserModel.removeCustomer(email);
+    res.status(200).json({ message: 'Customer deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -956,11 +1176,36 @@ app.post('/employeeLogin', async (req, res) => {
 
     // Return success response
     console.log('Employee login successful');
-    res.status(200).json({ message: 'Login successful' });
+    res.status(200).json({ message: 'Login successful', employee});
   } catch (err) {
     // Handle errors
     console.error(err);
     res.status(401).json({ error: err.message });
+  }
+});
+
+// Endpoint to update the employee page
+app.put('/updateEmployee/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const updateFields = req.body;
+    const updatedEmployee = await EmployeeModel.updateEmployee(email, updateFields);
+    res.json(updatedEmployee);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to update employee');
+  }
+});
+
+// Endpoint to delete an employee by email
+app.delete('/removeEmployee', async (req, res) => {
+  try {
+    const { email } = req.query;
+    await EmployeeModel.removeEmployee(email);
+    res.status(200).json({ message: 'Employee deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -1058,6 +1303,31 @@ app.post('/createInventory', async (req, res) => {
     const item = req.body;
     const newItem = await InventoryModel.create(item);
     res.status(201).json(newItem);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint for Update inventory item based on inventroy ID
+app.put('/updateInventory/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updateFields = req.body;
+    const updatedItem = await InventoryModel.updateInventory(id, updateFields);
+    res.json(updatedItem);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to update item');
+  }
+});
+
+// Endpoint to delete inventory item
+app.delete('removeInventoryItem', async (req, res) => {
+  try {
+    const { inventoryId } = req.params;
+    await InventoryModel.removeInventoryItem(inventoryId);
+    res.status(200).json({ message: `Inventory item with ID ${inventoryId} has been deleted` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -1204,6 +1474,29 @@ app.patch('updateItemGroup', async (req, res) => {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ORDER STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+app.post('/createOrder', async (req, res) => {
+  try {
+    const { creationdate, status, deliverydate } = req.body;
+    const order = await OrderModel.createOrder({ creationdate, status, deliverydate });
+    res.status(201).json({ order });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//Delete an order basd on order id
+app.delete('removeOrder', async (req, res) => {
+  try {
+    const orderId = req.query;
+    await OrderModel.removeOrder(orderId);
+    res.status(200).json({ message: 'Order deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // get order status
 app.get('/getOrderStatus', async (req, res) => {
   try {
