@@ -173,13 +173,8 @@ const EmployeeModel = {
   // Update employee page 
   async updateEmployee(email, updateFields) {
     try {
-      // Get the employee with the specified email
-      const getEmployeeQuery = {
-        text: 'SELECT * FROM employee WHERE email = $1',
-        values: [email],
-      };
-      const { rowCount, rows: employee } = await client.query(getEmployeeQuery);
-      if (rowCount === 0) {
+      const employee = await client.query('SELECT * FROM employee WHERE email = $1', [email]);
+      if (employee.rowCount === 0) {
         throw new Error('Employee not found');
       }
   
@@ -187,10 +182,10 @@ const EmployeeModel = {
       const updateQuery = {
         text: 'UPDATE employee SET firstname = $1, lastname = $2, email = $3, password = $4 WHERE email = $5 RETURNING *',
         values: [
-          updateFields.firstname || employee[0].firstname,
-          updateFields.lastname || employee[0].lastname,
-          updateFields.email || employee[0].email,
-          updateFields.password ? await bcrypt.hash(updateFields.password, 10) : employee[0].password,
+          updateFields.firstname || employee.rows[0].firstname,
+          updateFields.lastname || employee.rows[0].lastname,
+          updateFields.email || employee.rows[0].email,
+          updateFields.password ? await bcrypt.hash(updateFields.password, 10) : employee.rows[0].password,
           email,
         ],
       };
@@ -389,12 +384,12 @@ const InventoryModel = {
       const updateQuery = {
         text: 'UPDATE inventory SET name = $1, description = $2, weight = $3, price = $4, itemgroup = $5, stock = $6 WHERE inventory_id = $7 RETURNING *',
         values: [
-          updateFields.name || inventory[0].name,
-          updateFields.description || inventory[0].description,
-          updateFields.weight || inventory[0].weight,
-          updateFields.price || inventory[0].price,
-          updateFields.itemgroup || inventory[0].itemgroup,
-          updateFields.stock || inventory[0].stock,
+          updateFields.name || inventory.rows[0].name,
+          updateFields.description || inventory.rows[0].description,
+          updateFields.weight || inventory.rows[0].weight,
+          updateFields.price || inventory.rows[0].price,
+          updateFields.itemgroup || inventory.rows[0].itemgroup,
+          updateFields.stock || inventory.rows[0].stock,
           id,
         ],
       };
@@ -857,7 +852,7 @@ app.post('/login', async (req, res) => {
 });
 
 // Endpoint to update whole customer page
-app.put('/updateCustomer', async (req, res) => {
+app.put('/updateCustomer/:email', async (req, res) => {
   try {
     const email = req.params.email;
     const updateFields = req.body;
