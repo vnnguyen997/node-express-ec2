@@ -5,6 +5,7 @@ import Login from './components/Login';
 import EmployeeCreate from './components/EmployeeCreate';
 import EmployeeLogin from './components/EmployeeLogin';
 import InventoryCreate from './components/InventoryCreate';
+import UpdateCustomer from './components/UpdateCustomer';
 
 
 const App = () => {
@@ -15,6 +16,7 @@ const App = () => {
       <EmployeeCreate />
       <EmployeeLogin />
       <InventoryCreate />
+      <UpdateCustomer />
 
     
     </div>
