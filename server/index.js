@@ -99,6 +99,21 @@ const UserModel = {
       return rows[0];
   },
 
+  // Display all customers
+  async displayCustomers() {
+    // Define the SELECT query to retrieve all rows from the "customer" table
+    const query = {
+      text: 'SELECT * FROM customer',
+    };
+  
+    // execute
+    const { rows } = await client.query(query);
+
+    // return rows
+    return rows;
+  },
+
+
   // Delete customer by email
   async removeCustomer(email) {
     try {
@@ -168,6 +183,20 @@ const EmployeeModel = {
       };
       const { rows } = await client.query(query);
       return rows[0];
+  },
+
+  // display emplopyees
+  async displayEmployees() {
+    // Define the SELECT query to retrieve all rows from the "employee" table
+    const query = {
+      text: 'SELECT * FROM employee',
+    };
+  
+    // Execute
+    const { rows } = await client.query(query);
+  
+    // Return rows
+    return rows;
   },
 
   // Update employee page 
@@ -355,8 +384,8 @@ const InventoryModel = {
     try {
       // Insert new item
       const insertQuery = {
-        text: 'INSERT INTO inventory(name, description, weight, price, itemgroup, stock) VALUES($1, $2, $3, $4, $5, $6) RETURNING *',
-        values: [item.name, item.description, item.weight, item.price, item.itemgroup, item.stock],
+        text: 'INSERT INTO inventory(name, description, weight, price, itemgroup, stock, image) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+        values: [item.name, item.description, item.weight, item.price, item.itemgroup, item.stock, item.image],
       };
       const { rows } = await client.query(insertQuery);
       console.log(rows[0]);
@@ -367,22 +396,42 @@ const InventoryModel = {
     }
   },
 
+  // Find employee by email
+  async findByID(inventory_id) {
+    const query = {
+      text: 'SELECT * FROM inventory WHERE inventory_id = $1',
+      values: [inventory_id],
+    };
+    const { rows } = await client.query(query);
+    return rows[0];
+  },
+
+  // display inventory
+  async displayInventory() {
+    // Define the SELECT query to retrieve all rows from the "inventory" table
+    const query = {
+      text: 'SELECT * FROM inventory',
+    };
+  
+    // Execute 
+    const { rows } = await client.query(query);
+  
+    // Return rows
+    return rows;
+  },
+
   // Update inventory item based on inventory_id
-  async updateInventory(id, updateFields) {
+  async updateInventory(inventory_id, updateFields) {
     try {
-      // Get the inventory item with the specified id
-      const getInventoryQuery = {
-        text: 'SELECT * FROM inventory WHERE inventory_id = $1',
-        values: [id],
-      };
-      const { rowCount, rows: inventory } = await client.query(getInventoryQuery);
-      if (rowCount === 0) {
-        throw new Error('Inventory item not found');
+      // Find the item with the given inventory ID
+      const item = await InventoryModel.findByID(inventory_id);
+      if (!item) {
+        throw new Error('Item not found');
       }
   
       // Update the inventory fields with the new values, or keep the old value if the field is not provided
       const updateQuery = {
-        text: 'UPDATE inventory SET name = $1, description = $2, weight = $3, price = $4, itemgroup = $5, stock = $6 WHERE inventory_id = $7 RETURNING *',
+        text: 'UPDATE inventory SET name = $1, description = $2, weight = $3, price = $4, itemgroup = $5, stock = $6 , image = $7 WHERE inventory_id = $8 RETURNING *',
         values: [
           updateFields.name || inventory.rows[0].name,
           updateFields.description || inventory.rows[0].description,
@@ -390,7 +439,8 @@ const InventoryModel = {
           updateFields.price || inventory.rows[0].price,
           updateFields.itemgroup || inventory.rows[0].itemgroup,
           updateFields.stock || inventory.rows[0].stock,
-          id,
+          updateFields.image || inventory.rows[0].image,
+          inventory_id,
         ],
       };
       const { rows } = await client.query(updateQuery);
@@ -403,24 +453,20 @@ const InventoryModel = {
   },
 
   // Delete item based on inventory_id
-  async removeInventoryItem(inventoryId) {
+  async removeInventoryItem(inventory_id) {
     try {
       // Find the item with the given inventory ID
-      const query = {
-        text: 'SELECT * FROM inventory WHERE inventory_id = $1',
-        values: [inventoryId],
-      };
-      const { rows } = await client.query(query);
-      if (rows.length === 0) {
-        throw new Error('Inventory item not found');
+      const item = await InventoryModel.findByID(inventory_id);
+      if (!item) {
+        throw new Error('Item not found');
       }
   
       // Delete the item
-      const deleteQuery = {
+      const query = {
         text: 'DELETE FROM inventory WHERE inventory_id = $1',
-        values: [inventoryId],
+        values: [inventory_id],
       };
-      const result = await client.query(deleteQuery);
+      const result = await client.query(query);
       console.log(result);
     } catch (err) {
       console.error(err);
@@ -652,38 +698,83 @@ const OrderModel = {
         text: 'INSERT INTO orders(creationdate, status, deliverydate) VALUES($1, $2, $3) RETURNING *',
         values: [order.creationdate, order.status, order.deliverydate],
       };
-      const { rows } = await client.query(insertQuery);
-      console.log(rows[0]);
-      return rows[0];
+      const result = await client.query(insertQuery);
+      console.log(result);
     } catch (err) {
       console.error(err);
       throw new Error('Failed to create order');
     }
   },
 
+  // Find employee by email
+  async findByID(order_id) {
+    const query = {
+      text: 'SELECT * FROM orders WHERE order_id = $1',
+      values: [order_id],
+    };
+    const { rows } = await client.query(query);
+    return rows[0];
+  },
+
+  // display orders
+  async displayOrders() {
+    // Define the SELECT query to retrieve all rows from the "orders" table
+    const query = {
+      text: 'SELECT * FROM orders',
+    };
+  
+    // Execute 
+    const { rows } = await client.query(query);
+  
+    // Return rows
+    return rows;
+  },
+
   // Delete Orders using Order_id
-  async removeOrder(orderId) {
+  async removeOrder(order_id) {
     try {
-      // Find the order with the given order ID
-      const query = {
-        text: 'SELECT * FROM orders WHERE order_id = $1',
-        values: [orderId],
-      };
-      const { rows } = await client.query(query);
-      if (rows.length === 0) {
-        throw new Error('Order not found');
+      // Find the item with the given inventory ID
+      const item = await OrderModel.findByID(order_id);
+      if (!item) {
+        throw new Error('Item not found');
       }
   
-      // Delete the order
-      const deleteQuery = {
+      // Delete the item
+      const query = {
         text: 'DELETE FROM orders WHERE order_id = $1',
-        values: [orderId],
+        values: [order_id],
       };
-      const result = await client.query(deleteQuery);
+      const result = await client.query(query);
       console.log(result);
     } catch (err) {
       console.error(err);
       throw new Error('Failed to remove order');
+    }
+  },
+
+  async updateOrder(order_id, updateFields) {
+    try {
+      const order = await client.query('SELECT * FROM orders WHERE order_id = $1', [order_id]);
+      if (order.rowCount === 0) {
+        throw new Error('Order not found');
+      }
+  
+      // Update the order fields with the new values, or keep the old value if the field is not provided
+      const updateQuery = {
+        text: 'UPDATE orders SET creationdate = $1, status = $2, deliverydate = $3 WHERE order_id = $4 RETURNING *',
+        values: [
+          updateFields.creationdate || order.rows[0].creationdate,
+          updateFields.status || order.rows[0].status,
+          updateFields.deliverydate || order.rows[0].deliverydate,
+          order_id,
+        ],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update order');
     }
   },
 
@@ -851,6 +942,25 @@ app.post('/login', async (req, res) => {
   }
 });
 
+app.get('/displayCustomers', async (req, res) => {
+  try {
+    // Define the SELECT query to retrieve all rows from the "customer" table
+    const query = {
+      text: 'SELECT * FROM customer',
+    };
+  
+    // Execute the query using the database client
+    const { rows } = await client.query(query);
+
+    // Return the retrieved rows as a JSON response
+    res.json(rows);
+  } catch (error) {
+    // Handle any errors that occurred during the query or response
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Endpoint to update whole customer page
 app.put('/updateCustomer/:email', async (req, res) => {
   try {
@@ -938,6 +1048,26 @@ app.post('/employeeLogin', async (req, res) => {
     // Handle errors
     console.error(err);
     res.status(401).json({ error: err.message });
+  }
+});
+
+// end point to display employees
+app.get('/displayEmployees', async (req, res) => {
+  try {
+    // Define the SELECT query to retrieve all rows from the "employee" table
+    const query = {
+      text: 'SELECT * FROM employee',
+    };
+  
+    // Execute the query using the database client
+    const { rows } = await client.query(query);
+
+    // Return the retrieved rows as a JSON response
+    res.json(rows);
+  } catch (error) {
+    // Handle any errors that occurred during the query or response
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -1066,6 +1196,26 @@ app.post('/createInventory', async (req, res) => {
   }
 });
 
+// endpoint to display inventory
+app.get('/displayInventory', async (req, res) => {
+  try {
+    // Define the SELECT query to retrieve all rows from the "inventory" table
+    const query = {
+      text: 'SELECT * FROM inventory',
+    };
+  
+    // Execute the query using the database client
+    const { rows } = await client.query(query);
+
+    // Return the retrieved rows as a JSON response
+    res.json(rows);
+  } catch (error) {
+    // Handle any errors that occurred during the query or response
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Endpoint for Update inventory item based on inventroy ID
 app.put('/updateInventory/:id', async (req, res) => {
   try {
@@ -1080,11 +1230,11 @@ app.put('/updateInventory/:id', async (req, res) => {
 });
 
 // Endpoint to delete inventory item
-app.delete('removeInventoryItem', async (req, res) => {
+app.delete('/removeInventoryItem', async (req, res) => {
   try {
-    const { inventoryId } = req.params;
-    await InventoryModel.removeInventoryItem(inventoryId);
-    res.status(200).json({ message: `Inventory item with ID ${inventoryId} has been deleted` });
+    const { inventory_id } = req.query;
+    await InventoryModel.removeInventoryItem(inventory_id);
+    res.status(200).json({ message: `Inventory item with ID ${inventory_id} has been deleted` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -1233,21 +1383,54 @@ app.patch('updateItemGroup', async (req, res) => {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 app.post('/createOrder', async (req, res) => {
   try {
-    const { creationdate, status, deliverydate } = req.body;
-    const order = await OrderModel.createOrder({ creationdate, status, deliverydate });
-    res.status(201).json({ order });
+    const order = req.body;
+    const newOrder = await OrderModel.createOrder(order);
+    res.status(201).json({ newOrder });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
 
-//Delete an order basd on order id
-app.delete('removeOrder', async (req, res) => {
+// Endpoint to display orders
+app.get('/displayOrders', async (req, res) => {
   try {
-    const orderId = req.query;
-    await OrderModel.removeOrder(orderId);
-    res.status(200).json({ message: 'Order deleted successfully' });
+    // Define the SELECT query to retrieve all rows from the "orders" table
+    const query = {
+      text: 'SELECT * FROM orders',
+    };
+  
+    // Execute the query using the database client
+    const { rows } = await client.query(query);
+
+    // Return the retrieved rows as a JSON response
+    res.json(rows);
+  } catch (error) {
+    // Handle any errors that occurred during the query or response
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//update order
+app.put('/updateOrder/:order_id', async (req, res) => {
+  try {
+    const order_id = req.params.order_id;
+    const updateFields = req.body;
+    const updatedOrder = await OrderModel.updateOrder(order_id, updateFields);
+    res.json(updatedOrder);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to update order');
+  }
+});
+
+//Delete an order basd on order id
+app.delete('/removeOrder', async (req, res) => {
+  try {
+    const { order_id } = req.query;
+    await OrderModel.removeOrder(order_id);
+    res.status(200).json({ message: `Order with ID ${order_id} has been deleted` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
