@@ -13,7 +13,7 @@ const client = new Client({
   user: 'postgres',
   host: 'office-depot-db.ch4cpqr7r6fy.us-east-1.rds.amazonaws.com',
   database: 'office_depot_db',
-  password: 'office-depot-g7',
+  password: 'PostGres456!',
   port: 5432,
 });
 client.connect();
