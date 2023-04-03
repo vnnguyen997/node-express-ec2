@@ -12,7 +12,7 @@ const port = 5001;
 const client = new Client({
   user: 'postgres',
   host: 'office-depot-db.ch4cpqr7r6fy.us-east-1.rds.amazonaws.com',
-  database: 'office-depot-db',
+  database: 'newDB',
   password: 'PostGres456!',
   port: 5432,
 });
