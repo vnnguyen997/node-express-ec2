@@ -11,7 +11,7 @@ const port = 5001;
 // Connect to Postgres database
 const client = new Client({
   user: 'postgres',
-  host: 'office-depot-db.cw9nmjmeojrg.us-east-1.rds.amazonaws.com',
+  host: 'office-depot-db.ch4cpqr7r6fy.us-east-1.rds.amazonaws.com',
   database: 'office_depot_db',
   password: 'office-depot-g7',
   port: 5432,
