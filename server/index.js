@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const { Client } = require('pg');
 const cors = require("cors");
+const session = require('express-session');
+const store = new session.MemoryStore();
 
 
 const app = express();
@@ -17,6 +19,22 @@ const client = new Client({
   port: 5432,
 });
 client.connect();
+
+// Session middleware
+const sessionConfig = {
+  secret: 'some secret', // Replace with your own secret key
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 600000, // Session duration in milliseconds (30 days in this case)
+  },
+  store
+};
+
+// Configure middleware
+app.use(session(sessionConfig));
+app.use(cors());
+app.use(bodyParser.json());
 
 // Define user schema
 const userSchema = {
@@ -930,15 +948,36 @@ app.post('/login', async (req, res) => {
       throw new Error('Invalid username or password');
     }
 
-    
+    // Set session cookie
+    req.session.user = { id: user.firstname, email: user.email };
+    req.session.authenticated = true;
 
+    
     // Return success response
-    console.log('Login successful');
+    console.log('Login successful'+ ' this ' + req.sessionID);
+    console.log(user.firstname + ' ' + user.email)
     res.status(200).json({ message: 'Login successful', user });
+    
   } catch (err) {
     // Handle errors
     console.error(err);
     res.status(401).json({ error: err.message });
+  }
+});
+
+// Endpoint for user logout
+app.post('/logout', async (req, res) => {
+  try {
+    // Destroy session
+    req.session.destroy();
+    
+    // Return success response
+    res.status(200).json({ message: 'Logout successful' });
+    
+  } catch (err) {
+    // Handle errors
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -1041,9 +1080,15 @@ app.post('/employeeLogin', async (req, res) => {
       throw new Error('Invalid email or password');
     }
 
+    // Set session cookie
+    req.session.employee = { firstname: employee.firstname, email: employee.email };
+    req.session.authenticated = true;
+
     // Return success response
-    console.log('Employee login successful');
+    console.log('Employee login successful'+ ' this ' + req.sessionID);
+    console.log(employee.firstname + ' ' + employee.email)
     res.status(200).json({ message: 'Login successful', employee});
+
   } catch (err) {
     // Handle errors
     console.error(err);
