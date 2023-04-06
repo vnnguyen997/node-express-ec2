@@ -8,11 +8,14 @@ import InventoryCreate from './components/InventoryCreate';
 import UpdateCustomer from './components/UpdateCustomer';
 import UpdateEmployee from './components/UpdateEmployee';
 import UpdateInventory from './components/UpdateInventory';
+import SessionCookie from './components/SessionCookie';
 
 
 const App = () => {
   return (
     <div>
+      <SessionCookie />
+
       <Register />
       <Login />
       <EmployeeCreate />
