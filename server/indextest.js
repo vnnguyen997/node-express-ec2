@@ -10,10 +10,9 @@ app.use(session({
   secret: 'your-secret-key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false, httpOnly: false},
+  cookie: { secure: false, httpOnly: false, domain: '3.133.128.233', path: '/'},
 }));
 
-res.cookie('myCookie', myVariable, { domain: '3.133.128.233', path: '/' });
 
 app.get('/set-session', (req, res) => {
     req.session.myVariable = 'Hello from session!';
@@ -23,7 +22,7 @@ app.get('/set-session', (req, res) => {
 
 app.get('/get-session', (req, res) => {
     const myVariable = req.session.myVariable;
-    res.cookie('myCookie', myVariable);
+    res.cookie('myCookie', myVariable, { domain: '3.133.128.233', path: '/' });
     res.send('Cookie sent.');
 });
 
