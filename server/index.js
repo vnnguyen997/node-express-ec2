@@ -26,16 +26,16 @@ const sessionConfig = {
   saveUninitialized: false,
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
-    sameSite: false,
+    sameSite: "none",
     httpOnly: true,
-    secure: false
+    secure: true
   },
   store
 };
 
 // Configure middleware
-app.use(session(sessionConfig));
 app.use(cors());
+app.use(session(sessionConfig));
 app.use(bodyParser.json());
 
 // Define user schema
