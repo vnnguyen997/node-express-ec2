@@ -492,6 +492,26 @@ const InventoryModel = {
     }
   },
 
+  // get inventory item by inventory_id
+  async getInventoryById(inventory_id) {
+    try {
+      const query = {
+        text: 'SELECT * FROM inventory WHERE inventory_id = $1',
+        values: [inventory_id],
+      };
+
+      const { rows } = await client.query(query);
+      if (rows.length > 0) {
+        return rows;
+      } else {
+        throw new Error('Inventory item not found');
+      }
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get inventory item');
+    }
+  },
+
   // get item name
   async getInventoryName(itemid) {
     try {
