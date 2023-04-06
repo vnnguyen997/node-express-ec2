@@ -19,12 +19,14 @@ const client = new Client({
 });
 client.connect();
 
+app.set("trust proxy", 1);
+
 // Session middleware
 const sessionConfig = {
   name: 'Team7isthebest',
   secret: 'some secret', // Replace with your own secret key
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   proxy: true,
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
