@@ -6,7 +6,6 @@ const cors = require("cors");
 const session = require('express-session');
 const store = new session.MemoryStore();
 
-
 const app = express();
 const port = 5001;
 
@@ -27,6 +26,7 @@ const sessionConfig = {
   saveUninitialized: false,
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
+    sameSite: false
   },
   store
 };
