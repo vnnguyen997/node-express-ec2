@@ -13,6 +13,8 @@ app.use(session({
   cookie: { secure: false, httpOnly: false},
 }));
 
+res.cookie('myCookie', myVariable, { domain: '3.133.128.233', path: '/' });
+
 app.get('/set-session', (req, res) => {
     req.session.myVariable = 'Hello from session!';
     res.send('Session variable set.');
