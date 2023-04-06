@@ -21,6 +21,7 @@ client.connect();
 
 // Session middleware
 const sessionConfig = {
+  name: 'Team7isthebest',
   secret: 'some secret', // Replace with your own secret key
   resave: false,
   saveUninitialized: false,
