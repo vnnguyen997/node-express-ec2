@@ -41,7 +41,7 @@ const sessionConfig = {
 
 // Configure middleware
 app.use(cors({
-    origin:'http://3.133.128.233:5001',
+    origin:'http://localhost:3000',
     withCredentials:true,
     credentials:true,
 }));
