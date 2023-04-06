@@ -27,7 +27,8 @@ const sessionConfig = {
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
     sameSite: false,
-    httpOnly: true
+    httpOnly: true,
+    secure: false
   },
   store
 };
