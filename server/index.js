@@ -30,10 +30,10 @@ const sessionConfig = {
   proxy: true,
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
-    sameSite: "lax",
+    sameSite: 'none',
     httpOnly: false,
     secure: false,
-    domain: 'http://localhost:3000'
+    domain: '.domain.com'
 
   },
   store
@@ -47,6 +47,15 @@ app.use(cors({
 }));
 app.use(session(sessionConfig));
 app.use(bodyParser.json());
+
+
+app.get('/example', (req, res) => {
+  // Set a cookie in the response
+  res.cookie('my_cookie', 'hello world', { maxAge: 600000, sameSite: "lax", httpOnly: false, secure: false });
+
+  // Send a response to the client
+  res.send('Response sent');
+});
 
 // Define user schema
 const userSchema = {
