@@ -26,7 +26,7 @@ const sessionConfig = {
   name: 'Team7isthebest',
   secret: 'some secret', // Replace with your own secret key
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   proxy: true,
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
@@ -38,7 +38,11 @@ const sessionConfig = {
 };
 
 // Configure middleware
-app.use(cors());
+app.use(cors({
+    origin:'http://localhost:3000',
+    withCredentials:true,
+    credentials:true,
+}));
 app.use(session(sessionConfig));
 app.use(bodyParser.json());
 
