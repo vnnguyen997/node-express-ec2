@@ -30,9 +30,9 @@ const sessionConfig = {
   proxy: true,
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
-    sameSite: "none",
+    sameSite: "lax",
     httpOnly: false,
-    secure: true,
+    secure: false,
     domain: 'http://localhost:3000'
 
   },
