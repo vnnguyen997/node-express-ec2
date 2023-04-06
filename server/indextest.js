@@ -10,7 +10,7 @@ app.use(session({
   secret: 'your-secret-key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false },
+  cookie: { secure: false, httpOnly: false},
 }));
 
 app.get('/set-session', (req, res) => {
