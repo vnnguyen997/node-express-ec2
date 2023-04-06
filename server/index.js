@@ -38,11 +38,7 @@ const sessionConfig = {
 };
 
 // Configure middleware
-app.use(cors({
-    origin:'http://localhost:3000',
-    withCredentials:true,
-    credentials:true,
-}));
+app.use(cors());
 app.use(session(sessionConfig));
 app.use(bodyParser.json());
 
