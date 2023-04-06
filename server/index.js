@@ -25,10 +25,11 @@ const sessionConfig = {
   secret: 'some secret', // Replace with your own secret key
   resave: false,
   saveUninitialized: false,
+  proxy: true,
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
     sameSite: "none",
-    httpOnly: true,
+    httpOnly: false,
     secure: true
   },
   store
