@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const { Client } = require('pg');
 const cors = require("cors");
 const session = require('express-session');
+const cookieParser = require('cookie-parser');
 const store = new session.MemoryStore();
 
 const app = express();
@@ -39,7 +40,7 @@ const sessionConfig = {
 
 // Configure middleware
 app.use(cors());
-app.use(express.cookieParser());
+app.use(cookieParser());
 app.use(session(sessionConfig));
 app.use(bodyParser.json());
 
