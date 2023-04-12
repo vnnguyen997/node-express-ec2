@@ -5,7 +5,7 @@ const { Client } = require('pg');
 const cors = require("cors");
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const store = new session.MemoryStore();
+const pgSession = require('connect-pg-simple')(session);
 
 const app = express();
 const port = 5001;
@@ -24,18 +24,16 @@ app.enable('trust proxy');
 
 // Session middleware
 const sessionConfig = {
-  name: 'Team7isthebest',
   secret: 'some secret', // Replace with your own secret key
   resave: false,
   saveUninitialized: false,
-  proxy: true,
-  key: 'session.sid',
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
-    httpOnly: true,
-    secure: true,
   },
-  store
+  store: new pgSession({
+    pool: client, // Postgres client instance
+    tableName: 'session' // Table name to store sessions
+  })
 };
 
 // Configure middleware
@@ -742,10 +740,205 @@ const InventoryModel = {
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Shopping Cart STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+const ShoppingCartModel = {
+
+  // Find shopping cart by customer ID
+  async findSCByCustID(customer_id) {
+    const query = {
+      text: 'SELECT * FROM shopping_cart WHERE customer_id = $1',
+      values: [customer_id],
+    };
+    const { rows } = await client.query(query);
+    return rows[0];
+  },
+
+  // Create a shopping cart whenever the customer logs in
+  async createShoppingCart(customer_id) {
+    try {
+      // Check if a shopping cart already exists for the customer
+      const shoppingCart = await ShoppingCartModel.findSCByCustID(customer_id);
+
+      if (shoppingCart) {
+        // Shopping cart already exists, return it
+        return shoppingCart;
+      }
+
+      // Shopping cart does not exist, create a new one
+      const insertQuery = {
+        text: 'INSERT INTO shopping_cart(customer_id) VALUES($1) RETURNING *',
+        values: [customer_id],
+      };
+      const { rows: newRows } = await client.query(insertQuery);
+      return newRows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to create shopping cart');
+    }
+  },
+
+};
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Shopping Cart Item STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+const ShoppingCartItemModel = {
+
+  // Find shopping cart by customer ID
+  async findSCByCustID(customer_id) {
+    const query = {
+      text: 'SELECT * FROM shopping_cart WHERE customer_id = $1',
+      values: [customer_id],
+    };
+    const { rows } = await client.query(query);
+    return rows[0];
+  },
+
+  // Find shopping cart items by cart_id and inventory_id
+  async findItemByCartAndItemId(cart_id, inventory_id) {
+    try {
+      const query = {
+        text: 'SELECT * FROM shopping_cart_items WHERE cart_id = $1 AND inventory_id = $2',
+        values: [cart_id, inventory_id]
+      };
+      const { rows } = await client.query(query);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to find shopping cart item');
+    }
+  },
+
+  async addItemToCart(customer_id, inventory_id, quantity) {
+    try {
+      // Item does not exist, retrieve the price from the inventory table and create a new item
+      const itemCheck = await InventoryModel.findByID(inventory_id);
+      if (!itemCheck) {
+        throw new Error('Inventory item not found');
+      }
+
+      const shoppingCart = await ShoppingCartModel.findSCByCustID(customer_id);
+      if (!shoppingCart) {
+        throw new Error('Shopping cart not found');
+      }
+  
+      console.log("Shopping cart found");
+  
+      // Check if the item already exists in the shopping cart
+      const existingItem = await ShoppingCartItemModel.findItemByCartAndItemId(shoppingCart.id, inventory_id);
+      if (existingItem) {
+        // Item already exists, update the quantity
+        const newQuantity = existingItem.quantity + quantity;
+        await ShoppingCartItemModel.updateCartItemQuantity(newQuantity, shoppingCart.id, existingItem.inventory_id);
+        return { message: 'Item quantity updated in cart' };
+      } else {
+        // Item does not exist, retrieve the price from the inventory table and create a new item
+        const inventoryItem = await InventoryModel.findByID(inventory_id);
+        if (!inventoryItem) {
+          return { error: 'Inventory item not found' };
+        }
+        const price = inventoryItem.price;
+        const insertQuery = {
+          text: 'INSERT INTO shopping_cart_items (cart_id, inventory_id, quantity, price) VALUES ($1, $2, $3, $4) RETURNING *',
+          values: [shoppingCart.id, inventory_id, quantity, price],
+        };
+        const { rows: newRows } = await client.query(insertQuery);
+        return newRows[0];
+      }
+  
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to add item to cart');
+    }
+  },
+
+  // remove a cart item
+  async removeCartItem(cart_id, inventory_id) {
+    try {
+      // Find the item with the given cart_id and inventory_id
+      const item = await ShoppingCartItemModel.findItemByCartAndItemId(cart_id, inventory_id);
+      if (!item) {
+        throw new Error('Item not found');
+      }
+  
+      // Delete the item
+      const query = {
+        text: 'DELETE FROM shopping_cart_items WHERE cart_id = $1 AND inventory_id = $2',
+        values: [cart_id, inventory_id],
+      };
+      const result = await client.query(query);
+      console.log(result);
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to remove item');
+    }
+  },
+
+  async updateCartItemQuantity(cart_id, inventory_id, quantity) {
+    try {
+      // Find the item with the given cart_id and inventory_id
+      const item = await ShoppingCartItemModel.findItemByCartAndItemId(cart_id, inventory_id);
+      if (!item) {
+        throw new Error('Item not found');
+      }
+
+      const updateQuery = {
+        text: 'UPDATE shopping_cart_items SET quantity = $1 WHERE cart_id = $2 AND inventory_id = $3 RETURNING *',
+        values: [quantity, cart_id, inventory_id],
+      };
+      const { rows } = await client.query(updateQuery);
+      console.log(rows[0]);
+      return rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to update item quantity');
+    }
+  }
+
+};
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ORDER STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Define Order model
 const OrderModel = {
+  async checkout(customer_id, cart_id) {
+    try {
+      // Insert new order
+      const insertOrderQuery = {
+        text: 'INSERT INTO orders(customer_id, creationdate, status, deliverydate) VALUES($1, NOW(), $2, NULL) RETURNING *',
+        values: [customer_id, 'pending'],
+      };
+      const newOrder = await client.query(insertOrderQuery);
+
+      console.log("order created");
+  
+      // Move items from shopping cart to order_items table
+      const insertOrderItemsQuery = {
+        text: `INSERT INTO order_items(order_id, inventory_id, quantity, price, total_price)
+               SELECT $1, sci.inventory_id, sci.quantity, sci.price, sci.totalprice
+               FROM shopping_cart_items sci
+               WHERE sci.cart_id = $2`,
+        values: [newOrder.rows[0].order_id, cart_id],
+      };
+      await client.query(insertOrderItemsQuery);
+  
+      // Clear shopping cart
+      const deleteShoppingCartItemsQuery = {
+        text: 'DELETE FROM shopping_cart_items WHERE cart_id = $1',
+        values: [cart_id],
+      };
+      await client.query(deleteShoppingCartItemsQuery);
+  
+      // Return the new order
+      return newOrder.rows[0];
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to create order');
+    }
+  },
+
   async createOrder(order) {
     try {
       // Insert new order
@@ -924,12 +1117,6 @@ const OrderModel = {
 
 };
 
-
-
-// Configure middleware
-app.use(cors());
-app.use(bodyParser.json());
-
 /**********************************************************************************************************
 **************************************END POINTS BELOW*****************************************************
 **********************************************************************************************************/
@@ -967,7 +1154,6 @@ app.post('/login', async (req, res) => {
     // Extract login data from request body
     const { email, password } = req.body;
 
-
     // Validate login data
     if (!email || !password) {
       throw new Error('Invalid login data');
@@ -986,14 +1172,16 @@ app.post('/login', async (req, res) => {
     }
 
     // Set session cookie
-    req.session.user = { id: user.firstname, email: user.email };
+    req.session.user = { customer_id: user.customer_id, email: user.email };
     req.session.authenticated = true;
 
+    // Create a shopping cart for the customer
+    const shoppingCart = await ShoppingCartModel.createShoppingCart(user.customer_id);
     
     // Return success response
     console.log('Login successful'+ ' this ' + req.sessionID);
-    console.log(user.firstname + ' ' + user.email)
-    res.status(200).json({ message: 'Login successful', user });
+    console.log(user.customer_id + ' ' + user.email)
+    res.status(200).json({ message: 'Login successful', user, shoppingCart });
     
   } catch (err) {
     // Handle errors
@@ -1461,8 +1649,74 @@ app.patch('updateItemGroup', async (req, res) => {
 });
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SHOPPING CART ITEMS STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// endpoint for adding an item to the shopping cart
+app.post('/addItemToCart', async (req, res) => {
+  const { inventory_id, quantity } = req.body;
+  const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+  console.log(customer_id)
+  try {
+    const newItem = await ShoppingCartItemModel.addItemToCart(customer_id, inventory_id, quantity);
+    res.status(200).json(newItem);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add item to cart' });
+  }
+});
+
+app.delete('/removeCartItem', async (req, res) => {
+  try {
+    const { inventory_id } = req.query;
+    const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+    const { rows } = await client.query('SELECT id as cart_id FROM shopping_cart WHERE customer_id = $1', [customer_id]);
+    const cart_id = rows[0].cart_id;
+
+    await ShoppingCartItemModel.removeCartItem(cart_id, inventory_id);
+    res.status(200).json({ message: `Item with inventory ID ${inventory_id} has been removed from cart ${cart_id}` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update the quantity of a cart item
+app.put('/updateCartItemQuantity', async (req, res) => {
+  try {
+    const { inventory_id, newQuantity } = req.body;
+    const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+    const { rows } = await client.query('SELECT id as cart_id FROM shopping_cart WHERE customer_id = $1', [customer_id]);
+    const cart_id = rows[0].cart_id;
+
+    console.log("got id")
+
+    const updatedItem = await ShoppingCartItemModel.updateCartItemQuantity(cart_id, inventory_id, newQuantity);
+    res.status(200).json({ message: `Quantity of item with inventory ID ${inventory_id} in cart ${cart_id} has been updated to ${newQuantity}`, item: updatedItem });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ORDER STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+app.post('/checkout', async (req, res) => {
+  try {
+    const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+    const { rows } = await client.query('SELECT id as cart_id FROM shopping_cart WHERE customer_id = $1', [customer_id]);
+    const cart_id = rows[0].cart_id;
+
+    const newOrder = await OrderModel.checkout(customer_id, cart_id);
+
+    res.json({ success: true, message: 'Order created successfully', order: newOrder });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to create order' });
+  }
+});
+
 app.post('/createOrder', async (req, res) => {
   try {
     const order = req.body;
