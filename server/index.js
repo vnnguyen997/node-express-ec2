@@ -19,7 +19,7 @@ const client = new Client({
 });
 client.connect();
 
-app.set("trust proxy", 1);
+app.enable('trust proxy');
 
 // Session middleware
 const sessionConfig = {
@@ -28,17 +28,18 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   proxy: true,
+  key: 'session.sid',
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
-    sameSite: 'lax',
-    httpOnly: false,
-    secure: false,
+    httpOnly: true,
+    secure: true,
   },
   store
 };
 
 // Configure middleware
 app.use(cors());
+app.use(express.cookieParser());
 app.use(session(sessionConfig));
 app.use(bodyParser.json());
 
