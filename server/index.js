@@ -1257,9 +1257,9 @@ app.post('/createInventory', async (req, res) => {
 });
 
 // endpoint to get specific item by id
-app.get('/findItemById/:inventory_id', async (req, res) => {
+app.get('/findItemById', async (req, res) => {
   try {
-    const inventory_id = req.params.inventory_id;
+    const inventory_id = req.body.inventory_id;
     const item = await InventoryModel.findByID(inventory_id);
     res.status(200).json({ item });
   } catch (err) {
