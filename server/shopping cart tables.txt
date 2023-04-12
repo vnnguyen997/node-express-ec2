@@ -1,0 +1,81 @@
+ALTER TABLE orders
+ADD COLUMN customer_id INTEGER REFERENCES customer(customer_id);
+
+CREATE TABLE shopping_cart (
+  id SERIAL PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES customer(customer_id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  modified_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE shopping_cart_items (
+  id SERIAL PRIMARY KEY,
+  cart_id INTEGER NOT NULL REFERENCES shopping_cart(id),
+  inventory_id INTEGER NOT NULL REFERENCES inventory(inventory_id),
+  quantity INTEGER NOT NULL,
+  price NUMERIC(10, 2) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  modified_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Add the totalPrice column to the shopping_cart_items table
+ALTER TABLE shopping_cart_items ADD COLUMN totalPrice NUMERIC(10, 2);
+
+-- Update the totalPrice column for each row in the table
+UPDATE shopping_cart_items
+SET totalPrice = quantity * price;
+
+CREATE TABLE order_items (
+  id SERIAL PRIMARY KEY,
+  order_id INT NOT NULL,
+  inventory_id INT NOT NULL,
+  quantity INT NOT NULL,
+  price NUMERIC(10,2) NOT NULL,
+  total_price NUMERIC(10,2) NOT NULL,
+  FOREIGN KEY (order_id) REFERENCES orders(order_id),
+  FOREIGN KEY (inventory_id) REFERENCES inventory(inventory_id)
+);
+
+CREATE TABLE session (
+  sid varchar NOT NULL COLLATE "default",
+  sess json NOT NULL,
+  expire timestamp(6) NOT NULL
+)
+WITH (OIDS=FALSE);
+
+ALTER TABLE session ADD CONSTRAINT session_pkey PRIMARY KEY (sid) NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+CREATE INDEX session_expire_index ON session (expire);
+
+CREATE TRIGGER update_shopping_cart_modified_at
+BEFORE UPDATE ON shopping_cart
+FOR EACH ROW
+EXECUTE FUNCTION update_modified_at_column();
+
+CREATE TRIGGER update_shopping_cart_items_modified
+BEFORE UPDATE ON shopping_cart_items
+FOR EACH ROW
+EXECUTE FUNCTION update_modified_at_column();
+
+CREATE FUNCTION update_modified_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.modified_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_total_price_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.totalPrice = NEW.quantity * NEW.price;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER shopping_cart_items_total_price
+BEFORE INSERT OR UPDATE ON shopping_cart_items
+FOR EACH ROW
+EXECUTE FUNCTION update_total_price_column();
+
+
