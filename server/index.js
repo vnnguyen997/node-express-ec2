@@ -26,7 +26,7 @@ app.enable('trust proxy');
 const sessionConfig = {
   secret: 'some secret', // Replace with your own secret key
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
     maxAge: 600000, // Session duration in milliseconds (30 days in this case)
   },
