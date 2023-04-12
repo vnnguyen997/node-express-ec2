@@ -507,26 +507,6 @@ const InventoryModel = {
     }
   },
 
-  // get inventory item by inventory_id
-  async getInventoryById(inventory_id) {
-    try {
-      const query = {
-        text: 'SELECT * FROM inventory WHERE inventory_id = $1',
-        values: [inventory_id],
-      };
-
-      const { rows } = await client.query(query);
-      if (rows.length > 0) {
-        return rows;
-      } else {
-        throw new Error('Inventory item not found');
-      }
-    } catch (err) {
-      console.error(err);
-      throw new Error('Failed to get inventory item');
-    }
-  },
-
   // get item name
   async getInventoryName(itemid) {
     try {
@@ -1460,6 +1440,18 @@ app.post('/createInventory', async (req, res) => {
     const item = req.body;
     const newItem = await InventoryModel.create(item);
     res.status(201).json(newItem);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// endpoint to get specific item by id
+app.get('/findItemById', async (req, res) => {
+  try {
+    const inventory_id = req.body.inventory_id;
+    const item = await InventoryModel.findByID(inventory_id);
+    res.status(200).json({ item });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
