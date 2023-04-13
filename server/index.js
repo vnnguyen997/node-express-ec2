@@ -132,6 +132,15 @@ const UserModel = {
       return rows[0];
   },
 
+  async getCustID(email) {
+    const query = {
+      text: 'SELECT customer_id FROM customer WHERE email = $1',
+      values: [email],
+    };
+    const { rows } = await client.query(query);
+    return rows[0].customer_id;
+  },
+
   // Display all customers
   async displayCustomers() {
     // Define the SELECT query to retrieve all rows from the "customer" table
@@ -1119,8 +1128,14 @@ app.post('/register', async (req, res) => {
     const user = { firstname, lastname, email, password, shippingaddress, creditcard };
     await UserModel.create(user);
 
+    const customer_id = await UserModel.getCustID(user.email);
+    if (!user) {
+      throw new Error('Could not find user.');
+    }
+
     // Return success response
-    res.status(200).json({ message: 'User created successfully' });
+    console.log('Registration successful '+ customer_id + " " + user.email);
+    res.status(200).json({ message: 'User created successfully', customer_id: customer_id, email: user.email});
   } catch (err) {
     // Handle errors
     console.error(err);
@@ -1645,9 +1660,13 @@ app.patch('updateItemGroup', async (req, res) => {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // endpoint for adding an item to the shopping cart
 app.post('/addItemToCart', async (req, res) => {
-  const { inventory_id, quantity } = req.body;
-  const customer_id = req.session.user.customer_id; // Get the customer_id from the session
-  console.log(customer_id)
+  const { customer_id, inventory_id, quantity } = req.body;
+
+  // FOR COOKIES
+  // const { inventory_id, quantity } = req.body;
+  // const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+  // console.log(customer_id)
+
   try {
     const newItem = await ShoppingCartItemModel.addItemToCart(customer_id, inventory_id, quantity);
     res.status(200).json(newItem);
@@ -1659,8 +1678,13 @@ app.post('/addItemToCart', async (req, res) => {
 
 app.delete('/removeCartItem', async (req, res) => {
   try {
-    const { inventory_id } = req.query;
-    const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+
+    const { customer_id, inventory_id } = req.query;
+
+    // FOR COOKIES
+    // const { inventory_id } = req.query;
+    // const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+
     const { rows } = await client.query('SELECT id as cart_id FROM shopping_cart WHERE customer_id = $1', [customer_id]);
     const cart_id = rows[0].cart_id;
 
@@ -1675,8 +1699,13 @@ app.delete('/removeCartItem', async (req, res) => {
 // Update the quantity of a cart item
 app.put('/updateCartItemQuantity', async (req, res) => {
   try {
-    const { inventory_id, newQuantity } = req.body;
-    const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+
+    const { customer_id, inventory_id, newQuantity } = req.body;
+
+    // FOR COOKIES
+    // const { inventory_id, newQuantity } = req.body;
+    // const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+
     const { rows } = await client.query('SELECT id as cart_id FROM shopping_cart WHERE customer_id = $1', [customer_id]);
     const cart_id = rows[0].cart_id;
 
@@ -1696,7 +1725,12 @@ app.put('/updateCartItemQuantity', async (req, res) => {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 app.post('/checkout', async (req, res) => {
   try {
-    const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+
+    const { customer_id } = req.body;
+
+    // FOR COOKIES
+    // const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+
     const { rows } = await client.query('SELECT id as cart_id FROM shopping_cart WHERE customer_id = $1', [customer_id]);
     const cart_id = rows[0].cart_id;
 
