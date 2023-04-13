@@ -5,7 +5,7 @@ function DisplayOrders() {
   const [orders, setOrders] = useState([]);
 
   const handlePopulateTable = () => {
-    fetch('/displayOrders')
+    fetch('http://3.133.128.233:5001/displayOrders')
       .then(res => res.json())
       .then(data => setOrders(data))
       .catch(error => console.error(error));

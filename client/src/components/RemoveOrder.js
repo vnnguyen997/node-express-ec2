@@ -17,7 +17,7 @@ class RemoveOrder extends Component {
       handleSubmit = (event) => {
         event.preventDefault();
         const { order_id } = this.state;
-        axios.delete(`/removeOrder?order_id=${order_id}`)
+        axios.delete(`http://3.133.128.233:5001/removeOrder?order_id=${order_id}`)
           .then((response) => {
             console.log(response.data);
           })

@@ -5,7 +5,7 @@ function DisplayInventory() {
   const [inventory, setInventory] = useState([]);
 
   const handlePopulateTable = () => {
-    fetch('/displayInventory')
+    fetch('http://3.133.128.233:5001/displayInventory')
       .then(res => res.json())
       .then(data => setInventory(data))
       .catch(error => console.error(error));

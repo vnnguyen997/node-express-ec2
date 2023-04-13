@@ -17,7 +17,7 @@ class RemoveInventory extends Component {
       handleSubmit = (event) => {
         event.preventDefault();
         const { inventory_id } = this.state;
-        axios.delete(`/removeInventoryItem?inventory_id=${inventory_id}`)
+        axios.delete(`http://3.133.128.233:5001/removeInventoryItem?inventory_id=${inventory_id}`)
           .then((response) => {
             console.log(response.data);
           })

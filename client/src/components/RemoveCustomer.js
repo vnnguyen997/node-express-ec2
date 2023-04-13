@@ -19,7 +19,7 @@ class RemoveCustomer extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     const { email } = this.state;
-    axios.delete(`/removeCustomer?email=${email}`)
+    axios.delete(`http://3.133.128.233:5001/removeCustomer?email=${email}`)
       .then((response) => {
         this.setState({ message: response.data.message, error: '' });
       })

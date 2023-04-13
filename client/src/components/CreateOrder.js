@@ -20,7 +20,7 @@ class CreateOrders extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     const { order_id, creationdate, status, deliverydate } = this.state;
-    axios.post('/createOrder', {
+    axios.post('http://3.133.128.233:5001/createOrder', {
       order_id,
       creationdate,
       status,

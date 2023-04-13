@@ -5,7 +5,7 @@ function DisplayCustomers() {
   const [customers, setCustomers] = useState([]);
 
   useEffect(() => {
-    fetch('/displayCustomers')
+    fetch('http://3.133.128.233:5001/displayCustomers')
       .then(res => res.json())
       .then(data => setCustomers(data))
       .catch(error => console.error(error));

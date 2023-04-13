@@ -19,7 +19,7 @@ class RemoveEmployee extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     const { email } = this.state;
-    axios.delete(`/removeEmployee?email=${email}`)
+    axios.delete(`http://3.133.128.233:5001/removeEmployee?email=${email}`)
       .then((response) => {
         this.setState({ message: response.data.message, error: '' });
       })

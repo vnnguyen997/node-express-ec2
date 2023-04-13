@@ -5,7 +5,7 @@ function DisplayEmployees() {
   const [employees, setEmployees] = useState([]);
 
   const handlePopulateTable = () => {
-    fetch('/displayEmployees')
+    fetch('http://3.133.128.233:5001/displayEmployees')
       .then(res => res.json())
       .then(data => setEmployees(data))
       .catch(error => console.error(error));
