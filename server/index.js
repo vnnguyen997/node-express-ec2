@@ -81,8 +81,19 @@ const UserModel = {
 
       // Insert new user
       const insertQuery = {
-        text: 'INSERT INTO customer(firstname, lastname, email, password, shippingaddress, creditcard) VALUES($1, $2, $3, $4, $5, $6)',
-        values: [user.firstname, user.lastname, user.email, hashedPassword, user.shippingaddress, user.creditcard],
+        text: `INSERT INTO customer (firstname, lastname, email, password, shippingaddress, 
+                creditcard, cvv, expirationdate, billingaddress) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        values: [
+          user.firstname,
+          user.lastname,
+          user.email,
+          hashedPassword,
+          user.shippingaddress,
+          user.creditcard,
+          user.cvv,
+          user.expirationdate,
+          user.billingaddress,
+        ],
       };
       const result = await client.query(insertQuery);
       console.log(result);
@@ -101,7 +112,8 @@ const UserModel = {
       }
   
       const updateQuery = {
-        text: 'UPDATE customer SET firstname = $1, lastname = $2, email = $3, password = $4, shippingaddress = $5, creditcard = $6 WHERE email = $7 RETURNING *',
+        text: `UPDATE customer SET firstname = $1, lastname = $2, email = $3, password = $4, shippingaddress = $5, creditcard = $6, cvv = $7, 
+          expirationdate = $8, billingaddress = $9 WHERE email = $10 RETURNING *`,
         values: [
           updateFields.firstname || customer.rows[0].firstname,
           updateFields.lastname || customer.rows[0].lastname,
@@ -109,6 +121,9 @@ const UserModel = {
           updateFields.password ? await bcrypt.hash(updateFields.password, 10) : customer.rows[0].password,
           updateFields.shippingaddress || customer.rows[0].shippingaddress,
           updateFields.creditcard || customer.rows[0].creditcard,
+          updateFields.cvv || customer.rows[0].cvv,
+          updateFields.expirationdate || customer.rows[0].expirationdate,
+          updateFields.billingaddress || customer.rows[0].billingaddress,
           email
         ]
       };
@@ -693,15 +708,15 @@ const OrderModel = {
 app.post('/register', async (req, res) => {
   try {
     // Extract user data from request body
-    const { firstname, lastname, email, password, shippingaddress, creditcard } = req.body;
+    const { firstname, lastname, email, password, shippingaddress, creditcard, cvv, expirationdate, billingaddress } = req.body;
 
     // Validate user data
-    if (!firstname || !lastname || !email || !password || !shippingaddress || !creditcard) {
+    if (!firstname || !lastname || !email || !password || !shippingaddress || !creditcard || !cvv || !expirationdate || !billingaddress) {
       throw new Error('Invalid user data');
     }
 
     // Create new user
-    const user = { firstname, lastname, email, password, shippingaddress, creditcard };
+    const user = { firstname, lastname, email, password, shippingaddress, creditcard, cvv, expirationdate, billingaddress };
     await UserModel.create(user);
 
     const customer_id = await UserModel.getCustID(user.email);
