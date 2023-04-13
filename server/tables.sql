@@ -6,7 +6,10 @@ CREATE TABLE Customer (
     password VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     shippingAddress VARCHAR(255) NOT NULL,
-    creditCard VARCHAR(255)
+    creditCard VARCHAR(255),
+    cvv INTEGER,
+    exiprationDate VARCHAR(255),
+    billingAddress VARCHAR(255)
 )
 
 INSERT INTO Customer(firstName, lastName, password, email, shippingAddress, creditCard)
