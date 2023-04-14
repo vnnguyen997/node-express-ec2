@@ -648,6 +648,36 @@ const OrderModel = {
     return rows[0];
   },
 
+  // display all of a specific customers orders
+  async getOrdersByCustomerId(customer_id) {
+    try {
+      const query = {
+        text: 'SELECT * FROM orders WHERE customer_id = $1',
+        values: [customer_id],
+      };
+      const { rows } = await client.query(query);
+      return rows;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to get orders');
+    }
+  },
+
+  // display the items from an order
+  async getOrderItemsByOrderId(order_id) {
+    try {
+      const query = {
+        text: 'SELECT * FROM order_items WHERE order_id = $1',
+        values: [order_id],
+      };
+      const { rows } = await client.query(query);
+      return rows;
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get order items');
+    }
+  },
+
   // display orders
   async displayOrders() {
     // Define the SELECT query to retrieve all rows from the "orders" table
@@ -1150,6 +1180,30 @@ app.post('/createOrder', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Display all of a specific customer's orders
+app.get('/getOrdersByCustomerId/:customer_id', async (req, res) => {
+  const { customer_id } = req.params;
+  try {
+    const orders = await OrderModel.getOrdersByCustomerId(customer_id);
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Failed to get orders');
+  }
+});
+
+// Display the items from an order
+app.get('/getOrderItemsByOrderId/:order_id', async (req, res) => {
+  const { order_id } = req.params;
+  try {
+    const orderItems = await OrderModel.getOrderItemsByOrderId(order_id);
+    res.json(orderItems);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Failed to get order items');
   }
 });
 
