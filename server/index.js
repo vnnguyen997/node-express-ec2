@@ -464,6 +464,21 @@ const ShoppingCartItemModel = {
     return rows[0];
   },
 
+  // Get all shopping cart items by cart_id
+  async getItemsByCartId(cart_id) {
+    try {
+      const query = {
+        text: 'SELECT * FROM shopping_cart_items WHERE cart_id = $1',
+        values: [cart_id]
+      };
+      const { rows } = await client.query(query);
+      return rows;
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to get shopping cart items');
+    }
+  },
+
   // Find shopping cart items by cart_id and inventory_id
   async findItemByCartAndItemId(cart_id, inventory_id) {
     try {
@@ -1029,6 +1044,19 @@ app.delete('/removeInventoryItem', async (req, res) => {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SHOPPING CART ITEMS STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// endpoint that returns all shopping cart items for a given cart_id
+app.get('/getItemsByCartId/:cart_id', async (req, res) => {
+  const { cart_id } = req.params;
+
+  try {
+    const items = await ShoppingCartItemModel.getItemsByCartId(cart_id);
+    res.json(items);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to get shopping cart items');
+  }
+});
+
 // endpoint for adding an item to the shopping cart
 app.post('/addItemToCart', async (req, res) => {
   const { customer_id, inventory_id, quantity } = req.body;
