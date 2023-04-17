@@ -485,7 +485,10 @@ const ShoppingCartItemModel = {
   async getItemsByCartId(cart_id) {
     try {
       const query = {
-        text: 'SELECT * FROM shopping_cart_items WHERE cart_id = $1',
+        text: `SELECT sci.quantity, sci.totalprice, i.*
+          FROM shopping_cart_items sci
+          JOIN inventory i ON sci.inventory_id = i.inventory_id
+          WHERE cart_id = $1;`,
         values: [cart_id]
       };
       const { rows } = await client.query(query);
@@ -693,6 +696,37 @@ const OrderModel = {
     } catch (err) {
       console.error(err);
       throw new Error('Failed to get order items');
+    }
+  },
+
+  // Get orders and order_items by customer id
+  async getOrdersAndItemsByCustomerId(customer_id) {
+    try {
+      const query = {
+        text: `SELECT 
+        o.order_id, 
+        o.creationdate, 
+        o.status, 
+        o.deliverydate,
+        o.shipping_method,
+        oi.inventory_id, 
+        oi.quantity, 
+        oi.price, 
+        oi.total_price,
+        i.name
+        FROM 
+          orders o
+          JOIN order_items oi ON o.order_id = oi.order_id
+          JOIN inventory i ON oi.inventory_id = i.inventory_id
+        WHERE 
+          o.customer_id = $1;`,
+        values: [customer_id],
+      };
+      const { rows } = await client.query(query);
+      return rows;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to get orders');
     }
   },
 
@@ -1044,9 +1078,9 @@ app.post('/createInventory', async (req, res) => {
 });
 
 // endpoint to get specific item by id
-app.get('/findItemById', async (req, res) => {
+app.get('/findItemById/:inventory_id', async (req, res) => {
   try {
-    const inventory_id = req.body.inventory_id;
+    const inventory_id = req.params.inventory_id;
     const item = await InventoryModel.findByID(inventory_id);
     res.status(200).json({ item });
   } catch (err) {
@@ -1243,6 +1277,18 @@ app.get('/getOrderItemsByOrderId/:order_id', async (req, res) => {
   const { order_id } = req.params;
   try {
     const orderItems = await OrderModel.getOrderItemsByOrderId(order_id);
+    res.json(orderItems);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Failed to get order items');
+  }
+});
+
+// Display the items from an order
+app.get('/getOrdersAndItemsByCustomerId/:customer_id', async (req, res) => {
+  const { customer_id } = req.params;
+  try {
+    const orderItems = await OrderModel.getOrdersAndItemsByCustomerId(customer_id);
     res.json(orderItems);
   } catch (error) {
     console.error(error);
