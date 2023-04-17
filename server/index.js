@@ -557,6 +557,51 @@ const ShoppingCartItemModel = {
     }
   },
 
+  async bulkAddItemToCart(customer_id, inventory_ids, quantities) {
+    try {
+      const shoppingCart = await ShoppingCartModel.findSCByCustID(customer_id);
+      if (!shoppingCart) {
+        throw new Error('Shopping cart not found');
+      }
+      console.log("Shopping cart found");
+  
+      for (let i = 0; i < inventory_ids.length; i++) {
+        const inventory_id = inventory_ids[i];
+        const quantity = quantities[i];
+  
+        // Item does not exist, retrieve the price from the inventory table and create a new item
+        const itemCheck = await InventoryModel.findByID(inventory_id);
+        if (!itemCheck) {
+          throw new Error('Inventory item not found');
+        }
+  
+        // Check if the item already exists in the shopping cart
+        const existingItem = await ShoppingCartItemModel.findItemByCartAndItemId(shoppingCart.id, inventory_id);
+        if (existingItem) {
+          // Item already exists, update the quantity
+          const newQuantity = existingItem.quantity + quantity;
+          await ShoppingCartItemModel.updateCartItemQuantity(shoppingCart.id, existingItem.inventory_id, newQuantity);
+        } else {
+          // Item does not exist, retrieve the price from the inventory table and create a new item
+          const inventoryItem = await InventoryModel.findByID(inventory_id);
+          if (!inventoryItem) {
+            throw new Error('Inventory item not found');
+          }
+          const price = inventoryItem.price;
+          const insertQuery = {
+            text: 'INSERT INTO shopping_cart_items (cart_id, inventory_id, quantity, price) VALUES ($1, $2, $3, $4) RETURNING *',
+            values: [shoppingCart.id, inventory_id, quantity, price],
+          };
+          const { rows: newRows } = await client.query(insertQuery);
+        }
+      }
+      return { message: 'Items added to cart successfully' };
+    } catch (err) {
+      console.error(err);
+      throw new Error('Failed to add items to cart');
+    }
+  },
+
   // remove a cart item
   async removeCartItem(cart_id, inventory_id) {
     try {
@@ -1179,6 +1224,24 @@ app.post('/addItemToCart', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to add item to cart' });
+  }
+});
+
+// endpoint for adding multiple items to the shopping cart
+app.post('/bulkAddItemsToCart', async (req, res) => {
+  const { customer_id, inventory_ids, quantities } = req.body;
+
+  // FOR COOKIES
+  // const { inventory_ids, quantities } = req.body;
+  // const customer_id = req.session.user.customer_id; // Get the customer_id from the session
+  // console.log(customer_id)
+
+  try {
+    await ShoppingCartItemModel.bulkAddItemToCart(customer_id, inventory_ids, quantities);
+    res.status(200).json({ message: 'Items added to cart successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add items to cart' });
   }
 });
 
