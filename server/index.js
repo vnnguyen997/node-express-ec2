@@ -758,7 +758,8 @@ const OrderModel = {
         oi.quantity, 
         oi.price, 
         oi.total_price,
-        i.name
+        i.name,
+        i.warehouse
         FROM 
           orders o
           JOIN order_items oi ON o.order_id = oi.order_id
@@ -779,7 +780,23 @@ const OrderModel = {
   async displayOrders() {
     // Define the SELECT query to retrieve all rows from the "orders" table
     const query = {
-      text: 'SELECT * FROM orders',
+      text: `SELECT 
+      o.order_id, 
+      o.creationdate, 
+      o.status, 
+      o.deliverydate,
+      o.shipping_method,
+      o.customer_id,
+      oi.inventory_id, 
+      oi.quantity, 
+      oi.price, 
+      oi.total_price,
+      i.name,
+      i.warehouse
+      FROM 
+        orders o
+        JOIN order_items oi ON o.order_id = oi.order_id
+        JOIN inventory i ON oi.inventory_id = i.inventory_id`,
     };
   
     // Execute 
