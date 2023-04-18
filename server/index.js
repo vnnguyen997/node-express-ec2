@@ -1379,16 +1379,10 @@ app.get('/getOrdersAndItemsByCustomerId/:customer_id', async (req, res) => {
 // Endpoint to display orders
 app.get('/displayOrders', async (req, res) => {
   try {
-    // Define the SELECT query to retrieve all rows from the "orders" table
-    const query = {
-      text: 'SELECT * FROM orders',
-    };
-  
-    // Execute the query using the database client
-    const { rows } = await client.query(query);
 
+    const orders = await OrderModel.displayOrders();
     // Return the retrieved rows as a JSON response
-    res.json(rows);
+    res.json(orders);
   } catch (error) {
     // Handle any errors that occurred during the query or response
     console.error(error);
