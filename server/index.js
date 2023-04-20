@@ -179,7 +179,53 @@ const UserModel = {
       if (!customer) {
         throw new Error('Customer not found');
       }
-  
+
+      // console.log(customer.customer_id);
+
+      // Find the cart with the given customer_id
+      const cart = await ShoppingCartItemModel.getCartID(customer.customer_id);
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
+
+      // Delete the customer
+      const cartItemsDeleteQuery = {
+        text: 'DELETE FROM shopping_cart_items WHERE cart_id = $1',
+        values: [cart[0].id],
+      };
+      await client.query(cartItemsDeleteQuery);
+
+      // Delete the customer
+      const cartDeleteQuery = {
+        text: 'DELETE FROM shopping_cart WHERE id = $1',
+        values: [cart[0].id],
+      };
+      await client.query(cartDeleteQuery);
+
+      // Find the order_id by customer_id
+      const orders = await OrderModel.findByCustID(customer.customer_id);
+
+      const orderIds = [];
+      // Iterate over the rows 
+      orders.forEach(orders => {
+        orderIds.push(orders.order_id);
+      });
+
+      // Iterate over the orderIds array and execute a DELETE query for each order_id
+      for (const orderId of orderIds) {
+        const deleteOrderItemsQuery = {
+          text: 'DELETE FROM order_items WHERE order_id = $1',
+          values: [orderId],
+        };
+        await client.query(deleteOrderItemsQuery);
+
+        const deleteOrderQuery = {
+          text: 'DELETE FROM orders WHERE order_id = $1',
+          values: [orderId],
+        };
+        await client.query(deleteOrderQuery);
+      };
+
       // Delete the customer
       const query = {
         text: 'DELETE FROM customer WHERE email = $1',
@@ -714,6 +760,16 @@ const OrderModel = {
     return rows[0];
   },
 
+  // Find employee by email
+  async findByCustID(customer_id) {
+    const query = {
+      text: 'SELECT order_id FROM orders WHERE customer_id = $1',
+      values: [customer_id],
+    };
+    const { rows } = await client.query(query);
+    return rows;
+  },
+
   // display all of a specific customers orders
   async getOrdersByCustomerId(customer_id) {
     try {
@@ -806,21 +862,28 @@ const OrderModel = {
     return rows;
   },
 
-  // Delete Orders using Order_id
+  // Delete Orders and related items using Order_id
   async removeOrder(order_id) {
     try {
-      // Find the item with the given inventory ID
-      const item = await OrderModel.findByID(order_id);
-      if (!item) {
-        throw new Error('Item not found');
+      // Find the order with the given order_id
+      const order = await OrderModel.findByID(order_id);
+      if (!order) {
+        throw new Error('Order not found');
       }
-  
-      // Delete the item
-      const query = {
+
+      // Delete related items from order_items table
+      const deleteItemsQuery = {
+        text: 'DELETE FROM order_items WHERE order_id = $1',
+        values: [order_id],
+      };
+      await client.query(deleteItemsQuery);
+
+      // Delete the order
+      const deleteOrderQuery = {
         text: 'DELETE FROM orders WHERE order_id = $1',
         values: [order_id],
       };
-      const result = await client.query(query);
+      const result = await client.query(deleteOrderQuery);
       console.log(result);
     } catch (err) {
       console.error(err);
