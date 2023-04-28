@@ -117,7 +117,6 @@ const UserModel = {
         values: [
           updateFields.firstname || customer.rows[0].firstname,
           updateFields.lastname || customer.rows[0].lastname,
-          updateFields.email || customer.rows[0].email,
           updateFields.shippingaddress || customer.rows[0].shippingaddress,
           updateFields.creditcard || customer.rows[0].creditcard,
           updateFields.cvv || customer.rows[0].cvv,
