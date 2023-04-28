@@ -112,8 +112,8 @@ const UserModel = {
       }
   
       const updateQuery = {
-        text: `UPDATE customer SET firstname = $1, lastname = $2, email = $3, password = $4, shippingaddress = $5, creditcard = $6, cvv = $7, 
-          expirationdate = $8, billingaddress = $9 WHERE email = $10 RETURNING *`,
+        text: `UPDATE customer SET firstname = $1, lastname = $2, shippingaddress = $3, creditcard = $4, cvv = $5, 
+          expirationdate = $6, billingaddress = $7 WHERE email = $8 RETURNING *`,
         values: [
           updateFields.firstname || customer.rows[0].firstname,
           updateFields.lastname || customer.rows[0].lastname,
