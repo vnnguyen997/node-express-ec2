@@ -118,7 +118,6 @@ const UserModel = {
           updateFields.firstname || customer.rows[0].firstname,
           updateFields.lastname || customer.rows[0].lastname,
           updateFields.email || customer.rows[0].email,
-          updateFields.password ? await bcrypt.hash(updateFields.password, 10) : customer.rows[0].password,
           updateFields.shippingaddress || customer.rows[0].shippingaddress,
           updateFields.creditcard || customer.rows[0].creditcard,
           updateFields.cvv || customer.rows[0].cvv,
