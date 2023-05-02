@@ -712,10 +712,24 @@ const OrderModel = {
         text: `INSERT INTO order_items(order_id, inventory_id, quantity, price, total_price)
                SELECT $1, sci.inventory_id, sci.quantity, sci.price, sci.totalprice
                FROM shopping_cart_items sci
-               WHERE sci.cart_id = $2`,
+               WHERE sci.cart_id = $2
+               RETURNING order_id, inventory_id, quantity`,
         values: [newOrder.rows[0].order_id, cart_id],
       };
-      await client.query(insertOrderItemsQuery);
+      const orderItems = await client.query(insertOrderItemsQuery);
+
+      console.log(orderItems);
+
+      // Update the stock in the inventory table
+      for (const orderItem of orderItems.rows) {
+        const updateStockQuery = {
+          text: 'UPDATE inventory SET stock = stock - $1 WHERE inventory_id = $2',
+          values: [orderItem.quantity, orderItem.inventory_id],
+        };
+        console.log(orderItem.quantity, orderItem.inventory_id);
+        await client.query(updateStockQuery);
+
+      }
   
       // Clear shopping cart
       const deleteShoppingCartItemsQuery = {
